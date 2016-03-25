@@ -3,6 +3,9 @@ Java trace framework based on `spring cloud sleuth`.  Features:
  -  support `spring mvc 3.1+` instead of `spring boot`
  -  support log span tag  
 
+## How to use
+### load all `META-INF/spring/*.xml` to `spring context`
+
 ### add the interceptor to `springmvc`   
 ```xml
 
