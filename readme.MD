@@ -1,6 +1,9 @@
-## 使用方法
+## Introduction
+Java trace framework based on `spring cloud sleuth`.  Features:
+ -  support `spring mvc 3.1+` instead of `spring boot`
+ -  support log span tag  
 
-### 添加 `springmvc` 的 interceptor
+### add the interceptor to `springmvc`   
 ```xml
 
     <mvc:interceptors>
@@ -10,7 +13,7 @@
 
 ```
 
-### 配置`logback.xml` 的  `encoder` 添加上 `MDC`
+### modify `logback.xml` , add the following `MDC`
 
 ```xml
    <appender name="trace_log" class="ch.qos.logback.core.rolling.RollingFileAppender">
