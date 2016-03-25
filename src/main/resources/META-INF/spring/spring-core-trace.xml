@@ -1,0 +1,57 @@
+<beans xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns="http://www.springframework.org/schema/beans"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <!-- tracer basic config -->
+    <bean id="trace.traceKeys" class="com.yoho.core.trace.TraceKeys"/>
+    <bean id="trace.sample" class="com.yoho.core.trace.sampler.AlwaysSampler"/>
+    <bean id="trace.random" class="java.util.Random"/>
+    <bean id="trace.spanNamer" class="com.yoho.core.trace.DefaultSpanNamer"/>
+    <bean id="trace.spanLogger" class="com.yoho.core.trace.log.Slf4jSpanLogger">
+        <constructor-arg name="nameSkipPattern" value=""/>
+    </bean>
+    <bean id="trace.spanReporter" class="com.yoho.core.trace.NoOpSpanReporter"/>
+    <bean id="trace.tracer" class="com.yoho.core.trace.trace.DefaultTracer">
+        <constructor-arg name="defaultSampler" ref="trace.sample"/>
+        <constructor-arg name="random" ref="trace.random"/>
+        <constructor-arg name="spanNamer" ref="trace.spanNamer"/>
+        <constructor-arg name="spanLogger" ref="trace.spanLogger"/>
+        <constructor-arg name="spanReporter" ref="trace.spanReporter"/>
+    </bean>
+
+
+    <!-- web filter -->
+    <bean id="trace.web.extractor" class="com.yoho.core.trace.instrument.web.HttpServletRequestExtractor">
+        <constructor-arg index="0" ref="trace.random"/>
+    </bean>
+    <bean id="trace.web.injector" class="com.yoho.core.trace.instrument.web.HttpServletResponseInjector"/>
+    <bean id="trace.traceInterceptor" class="com.yoho.core.trace.instrument.web.TraceInterceptor">
+        <constructor-arg name="traceKeys" ref="trace.traceKeys"/>
+        <constructor-arg name="tracer" ref="trace.tracer"/>
+        <constructor-arg name="spanReporter" ref="trace.spanReporter"/>
+        <constructor-arg name="spanExtractor" ref="trace.web.extractor"/>
+        <constructor-arg name="spanInjector" ref="trace.web.injector"/>
+    </bean>
+
+    <!-- web client -->
+    <bean id="trace.web.client.injector" class="com.yoho.core.trace.instrument.web.client.HttpRequestInjector"/>
+    <bean id="trace.web.client.interceptor"
+          class="com.yoho.core.trace.instrument.web.client.TraceRestTemplateInterceptor">
+        <constructor-arg name="tracer" ref="trace.tracer"/>
+        <constructor-arg name="spanInjector" ref="trace.web.client.injector"/>
+    </bean>
+    <bean id="trace.web.client.restTemplateDecorator" class="com.yoho.core.trace.instrument.web.client.RestTemplateDecorator">
+      <constructor-arg name="traceRestTemplateInterceptor" ref="trace.web.client.interceptor"/>
+    </bean>
+
+    <!-- hystrix -->
+    <bean id="trace.hystrix"
+          class="com.yoho.core.trace.instrument.hystrix.SleuthHystrixConcurrencyStrategy">
+        <constructor-arg name="traceKeys" ref="trace.traceKeys"/>
+        <constructor-arg name="tracer" ref="trace.tracer"/>
+    </bean>
+
+
+</beans>
